@@ -21,7 +21,7 @@
   var TEXTS = {
     fr: {
       title: "Reconnaissance d'accords",
-      hint: "Glisse une puce (numéro de case, de 1 à 12) sur une corde. Sans puce, la corde est jouée à vide ; le bouton à gauche permet de la couper (×). Pour retirer une puce, glisse-la hors du manche.",
+      hint: "Glisse une puce (numéro de case, de 1 à 12) sur une corde. Sans puce, la corde est jouée à vide ; le bouton à gauche permet de la couper (×). Glisse une puce déjà posée le long de la corde pour changer de case, ou hors du manche pour la retirer.",
       play: '▶ Écouter',
       reset: 'Réinitialiser',
       tray: 'Puces à glisser (numéro de case)',
@@ -43,7 +43,7 @@
     },
     en: {
       title: 'Chord recognition',
-      hint: 'Drag a chip (fret number, 1 to 12) onto a string. A string without a chip is played open; the button on the left mutes it (×). To remove a chip, drag it off the fretboard.',
+      hint: 'Drag a chip (fret number, 1 to 12) onto a string. A string without a chip is played open; the button on the left mutes it (×). Drag a placed chip along the string to change fret, or off the fretboard to remove it.',
       play: '▶ Play',
       reset: 'Reset',
       tray: 'Chips to drag (fret number)',
@@ -231,7 +231,7 @@
     ghost.className = 'chip ghost';
     ghost.textContent = n;
     document.body.appendChild(ghost);
-    drag = { fret: n, ghost: ghost, over: -1, lift: e.pointerType === 'touch' ? TOUCH_LIFT : 0, x: e.clientX, y: e.clientY };
+    drag = { fret: n, ghost: ghost, over: -1, lift: e.pointerType === 'touch' ? TOUCH_LIFT : 0, x: e.clientX, y: e.clientY, live: from >= 0 };
     moveGhost();
     if (from >= 0) {            // on saisit une puce déjà posée : on la retire
       state.frets[from] = null;
@@ -262,6 +262,15 @@
     return best;
   }
 
+  // Numéro de case sous la position x, sur la corde idx (1 à 12)
+  function fretAt(idx, x) {
+    var lane = laneEls[idx];
+    var left = lane.getBoundingClientRect().left + lane.clientLeft;
+    var cellWidth = lane.clientWidth / NB_FRETS;
+    var fret = Math.floor((x - left) / cellWidth) + 1;
+    return Math.max(1, Math.min(NB_FRETS, fret));
+  }
+
   function dropTarget() {
     return stringAt(drag.x, drag.y - drag.lift);
   }
@@ -276,6 +285,14 @@
       if (drag.over >= 0) { rowEls[drag.over].classList.remove('over'); }
       if (over >= 0) { rowEls[over].classList.add('over'); }
       drag.over = over;
+    }
+    // Puce déjà posée : elle prend le numéro de la case qu'elle traverse
+    if (drag.live && over >= 0) {
+      var fret = fretAt(over, drag.x);
+      if (fret !== drag.fret) {
+        drag.fret = fret;
+        drag.ghost.textContent = fret;
+      }
     }
   }
 
