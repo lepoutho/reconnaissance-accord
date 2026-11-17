@@ -1,0 +1,7 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/tape2497/reconnaissance-accords.teodul.fr/
+    - /bin/mkdir -p $DEPLOYPATH
+    - /bin/cp index.html app.js manifest.json icon.svg icon-192.png icon-512.png $DEPLOYPATH
+    - /bin/cp .htaccess $DEPLOYPATH
