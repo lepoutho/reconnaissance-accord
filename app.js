@@ -581,6 +581,11 @@
   document.getElementById('resetBtn').addEventListener('click', resetAll);
   document.getElementById('resetBtnMobile').addEventListener('click', resetAll);
 
+  // Appui long : pas de menu contextuel sur le manche ni sur les puces
+  document.addEventListener('contextmenu', function (e) {
+    if (e.target.closest && e.target.closest('.board-wrap')) { e.preventDefault(); }
+  });
+
   buildBoard();
   buildTray();
   render();

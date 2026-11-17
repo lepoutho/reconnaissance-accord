@@ -44,6 +44,10 @@
     margin: 0; padding: 16px;
     background: var(--bg); color: var(--text);
     font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    /* Pas de sélection de texte ni de menu au toucher long (téléphone, tablette) */
+    -webkit-user-select: none; user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
   }
   main { max-width: 960px; margin: 0 auto; }
   h1 { font-size: 1.3rem; margin: 0 0 4px; }
