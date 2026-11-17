@@ -217,6 +217,10 @@
 
   // ---------- Glisser-déposer (souris et tactile) ----------
   var drag = null;
+  var TOUCH_LIFT = 56;      // au doigt, la puce est affichée au-dessus du doigt pour rester visible
+  var SNAP_MARGIN = 24;     // tolérance (px) autour d'une corde pour accepter le dépôt
+
+  function blockTouchScroll(e) { e.preventDefault(); }
 
   function onChipDown(e) {
     e.preventDefault();
@@ -227,8 +231,8 @@
     ghost.className = 'chip ghost';
     ghost.textContent = n;
     document.body.appendChild(ghost);
-    drag = { fret: n, ghost: ghost, over: -1 };
-    moveGhost(e);
+    drag = { fret: n, ghost: ghost, over: -1, lift: e.pointerType === 'touch' ? TOUCH_LIFT : 0, x: e.clientX, y: e.clientY };
+    moveGhost();
     if (from >= 0) {            // on saisit une puce déjà posée : on la retire
       state.frets[from] = null;
       render();
@@ -236,25 +240,38 @@
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
     window.addEventListener('pointercancel', onUp);
+    // Empêche la tablette de faire défiler la page pendant le glissement
+    window.addEventListener('touchmove', blockTouchScroll, { passive: false });
   }
 
-  function moveGhost(e) {
-    drag.ghost.style.left = e.clientX + 'px';
-    drag.ghost.style.top = e.clientY + 'px';
+  function moveGhost() {
+    drag.ghost.style.left = drag.x + 'px';
+    drag.ghost.style.top = (drag.y - drag.lift) + 'px';
   }
 
+  // Corde la plus proche du point (x, y), avec une marge de tolérance
   function stringAt(x, y) {
+    var best = -1;
+    var bestDist = SNAP_MARGIN + 1;
     for (var idx = 0; idx < 6; idx++) {
       var r = rowEls[idx].getBoundingClientRect();
-      if (y >= r.top && y <= r.bottom && x >= r.left && x <= r.right) { return idx; }
+      if (x < r.left || x > r.right) { continue; }
+      var dist = y < r.top ? r.top - y : (y > r.bottom ? y - r.bottom : 0);
+      if (dist < bestDist) { best = idx; bestDist = dist; }
     }
-    return -1;
+    return best;
+  }
+
+  function dropTarget() {
+    return stringAt(drag.x, drag.y - drag.lift);
   }
 
   function onMove(e) {
     if (!drag) { return; }
-    moveGhost(e);
-    var over = stringAt(e.clientX, e.clientY);
+    drag.x = e.clientX;
+    drag.y = e.clientY;
+    moveGhost();
+    var over = dropTarget();
     if (over !== drag.over) {
       if (drag.over >= 0) { rowEls[drag.over].classList.remove('over'); }
       if (over >= 0) { rowEls[over].classList.add('over'); }
@@ -262,9 +279,9 @@
     }
   }
 
-  function onUp(e) {
+  function onUp() {
     if (!drag) { return; }
-    var idx = stringAt(e.clientX, e.clientY);
+    var idx = dropTarget();      // dernière position connue (fiable aussi sur tablette)
     if (drag.over >= 0) { rowEls[drag.over].classList.remove('over'); }
     document.body.removeChild(drag.ghost);
     if (idx >= 0) {
@@ -275,6 +292,7 @@
     window.removeEventListener('pointermove', onMove);
     window.removeEventListener('pointerup', onUp);
     window.removeEventListener('pointercancel', onUp);
+    window.removeEventListener('touchmove', blockTouchScroll);
     render();
   }
 

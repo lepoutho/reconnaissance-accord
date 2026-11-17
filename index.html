@@ -96,7 +96,7 @@
     background: var(--chip); color: var(--chip-text);
     display: flex; align-items: center; justify-content: center;
     font-weight: 700; font-size: .95rem; user-select: none; -webkit-user-select: none;
-    cursor: grab; touch-action: none; box-shadow: 0 2px 4px var(--shadow);
+    cursor: grab; touch-action: none; -webkit-touch-callout: none; box-shadow: 0 2px 4px var(--shadow);
   }
   .chip.placed { position: absolute; top: 50%; transform: translate(-50%, -50%); z-index: 2; }
   .chip.ghost { position: fixed; z-index: 100; pointer-events: none; transform: translate(-50%, -50%) scale(1.15); cursor: grabbing; }
@@ -115,6 +115,18 @@
   .fav-load span { font-family: ui-monospace, Menlo, monospace; font-size: .8rem; color: var(--muted); }
   .fav-del { background: transparent; color: var(--muted); border: 0; border-left: 1px solid var(--muted); padding: 0 10px; cursor: pointer; font-size: 1rem; }
   .fav-del:hover { color: var(--accent); }
+
+  /* Tablette (écran tactile large) : grosses puces, faciles à saisir */
+  @media (pointer: coarse) and (min-width: 601px) {
+    .chip { width: 64px; height: 64px; font-size: 1.4rem; }
+    .tray { gap: 18px; }
+    .string-row { height: 76px; }
+    .mute { width: 40px; height: 40px; font-size: 1.1rem; }
+    .side { width: 84px; }
+    .string-name { font-size: 1rem; }
+    .tray, .tray-title { padding-left: 0; margin-left: 84px; }
+    .numbers .lane span { font-size: .9rem; }
+  }
 
   @media (max-width: 600px) {
     .side { width: 52px; }
