@@ -104,6 +104,15 @@
   .tray { display: flex; flex-wrap: wrap; gap: 10px; padding: 4px 0 0 64px; }
   .tray-title { color: var(--muted); font-size: .85rem; margin: 14px 0 6px 64px; }
 
+  /* Bouton Réinitialiser placé entre le manche et « Mes positions » : téléphone uniquement */
+  .reset-mobile {
+    display: none; width: 100%; margin: 0 0 16px; padding: 14px;
+    background: var(--panel); color: var(--text);
+    border: 1.5px dashed var(--muted); border-radius: 12px;
+    font-size: 1rem; font-weight: 600; cursor: pointer;
+  }
+  .reset-mobile:active { border-color: var(--accent); color: var(--accent); }
+
   .favs { background: var(--panel); border-radius: 12px; padding: 16px 20px; }
   .favs h2 { font-size: 1rem; margin: 0 0 10px; }
   .fav-list { display: flex; flex-wrap: wrap; gap: 10px; }
@@ -129,6 +138,8 @@
   }
 
   @media (max-width: 600px) {
+    #resetBtn { display: none; }
+    .reset-mobile { display: block; }
     .side { width: 52px; }
     .tray, .tray-title { margin-left: 0; padding-left: 0; }
     .chord-name { font-size: 2.4rem; }
@@ -158,6 +169,8 @@
     <div class="tray-title" id="trayTitle">Puces à glisser (numéro de case)</div>
     <div class="tray" id="tray"></div>
   </section>
+
+  <button class="reset-mobile" id="resetBtnMobile" type="button">↺ Réinitialiser</button>
 
   <section class="favs">
     <h2 id="favTitle">Mes positions</h2>

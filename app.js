@@ -399,8 +399,8 @@
     document.getElementById('playBtn').textContent = tr('play');
     document.getElementById('saveBtn').textContent = tr('save');
     document.getElementById('favTitle').textContent = tr('favTitle');
-    document.getElementById('saveBtn').addEventListener('click', addFavorite);
-  document.getElementById('resetBtn').textContent = tr('reset');
+    document.getElementById('resetBtn').textContent = tr('reset');
+    document.getElementById('resetBtnMobile').textContent = '↺ ' + tr('reset');
     document.getElementById('langFr').title = tr('langFrTitle');
     document.getElementById('langEn').title = tr('langEnTitle');
     for (var n = 0; n < 6; n++) { nameEls[n].textContent = noteLabel(STRING_LABELS[n]); }
@@ -573,10 +573,13 @@
   document.getElementById('playBtn').addEventListener('click', playChord);
   document.getElementById('langFr').addEventListener('click', function () { setLang('fr'); });
   document.getElementById('langEn').addEventListener('click', function () { setLang('en'); });
-  document.getElementById('resetBtn').addEventListener('click', function () {
+  function resetAll() {
     for (var s = 0; s < 6; s++) { state.frets[s] = null; state.muted[s] = false; }
     render();
-  });
+  }
+  document.getElementById('saveBtn').addEventListener('click', addFavorite);
+  document.getElementById('resetBtn').addEventListener('click', resetAll);
+  document.getElementById('resetBtnMobile').addEventListener('click', resetAll);
 
   buildBoard();
   buildTray();
