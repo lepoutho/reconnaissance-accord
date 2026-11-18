@@ -564,26 +564,46 @@
 
   // ---------- Son ----------
   var audioCtx = null;
+  // Une note de guitare : onde triangle, plus une octave au-dessus sur téléphone
+  // (les petits haut-parleurs reproduisent mal les notes graves, l'octave les rend audibles)
+  function playNote(freq, start, level, destination) {
+    var partials = level.mobile ? [{ mult: 1, vol: 1 }, { mult: 2, vol: 0.5 }] : [{ mult: 1, vol: 1 }];
+    for (var p = 0; p < partials.length; p++) {
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.value = freq * partials[p].mult;
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(level.volume * partials[p].vol, start + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 1.8);
+      osc.connect(gain);
+      gain.connect(destination);
+      osc.start(start);
+      osc.stop(start + 1.9);
+    }
+  }
+
   function playChord() {
     var Ctx = window.AudioContext || window.webkitAudioContext;
     if (!Ctx) { return; }
     if (!audioCtx) { audioCtx = new Ctx(); }
+    if (audioCtx.state === 'suspended') { audioCtx.resume(); }   // iOS démarre le son en pause
+    var mobile = !!(window.matchMedia && window.matchMedia('(max-width: 600px)').matches);
+    var level = { mobile: mobile, volume: mobile ? 0.5 : 0.25 };
+
+    // Sur téléphone : un compresseur évite la saturation quand 6 notes sonnent ensemble
+    var destination = audioCtx.destination;
+    if (mobile && audioCtx.createDynamicsCompressor) {
+      var compressor = audioCtx.createDynamicsCompressor();
+      compressor.connect(audioCtx.destination);
+      destination = compressor;
+    }
+
     var notes = soundingNotes();
     var now = audioCtx.currentTime;
     for (var k = 0; k < notes.length; k++) {
       var freq = 440 * Math.pow(2, (notes[k].midi - 69) / 12);
-      var start = now + k * 0.06;
-      var osc = audioCtx.createOscillator();
-      var gain = audioCtx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0.0001, start);
-      gain.gain.exponentialRampToValueAtTime(0.25, start + 0.01);
-      gain.gain.exponentialRampToValueAtTime(0.0001, start + 1.8);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start(start);
-      osc.stop(start + 1.9);
+      playNote(freq, now + k * 0.06, level, destination);
     }
   }
 
